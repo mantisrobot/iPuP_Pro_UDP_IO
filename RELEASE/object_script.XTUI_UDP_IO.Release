@@ -1,0 +1,15 @@
+release/main.o
+release/mainwindow.o
+release/receivethread.o
+release/output.o
+release/outputdlg.o
+release/outputv2.o
+release/inputdlg.o
+release/xtui_udp_io_plugin_import.o
+release/qrc_Resource.o
+release/moc_mainwindow.o
+release/moc_receivethread.o
+release/moc_output.o
+release/moc_outputdlg.o
+release/moc_outputv2.o
+release/moc_inputdlg.o

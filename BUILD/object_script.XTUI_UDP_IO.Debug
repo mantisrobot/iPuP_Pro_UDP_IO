@@ -1,0 +1,14 @@
+debug/main.o
+debug/mainwindow.o
+debug/receivethread.o
+debug/output.o
+debug/outputdlg.o
+debug/outputv2.o
+debug/inputdlg.o
+debug/qrc_Resource.o
+debug/moc_mainwindow.o
+debug/moc_receivethread.o
+debug/moc_output.o
+debug/moc_outputdlg.o
+debug/moc_outputv2.o
+debug/moc_inputdlg.o

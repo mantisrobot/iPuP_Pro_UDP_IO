@@ -1,0 +1,59 @@
+// XP2 definitions
+
+#define XP2_FLOAT   float
+
+#define XP2_MAX_OUTPUTS 256
+#define XP2_MAX_INPUTS  64
+
+//	Packet word offsets
+#define	XP2_UDP_OUTPACKET_HEADER_OFFSET     0	// uint16
+#define	XP2_UDP_OUTPACKET_CODE_OFFSET		1	// uint32
+#define	XP2_UDP_OUTPACKET_CHANNELS_OFFSET	3	// uint16
+#define XP2_UDP_OUTPACKET_STATUS_OFFSET     4   // uint16
+#define	XP2_UDP_OUTPACKET_DATA_OFFSET		5	// uint16 ...
+#define XP2_UDP_OUTPACKET_CRC_OFFSET		5	// uint16 + data channels
+
+//	Packet word offsets
+#define	XP2_UDP_INPACKET_HEADER_OFFSET      0	// uint16
+#define	XP2_UDP_INPACKET_TIMECODE_OFFSET	1	// uint32
+#define XP2_UDP_INPACKET_STATUSBITS_OFFSET  3   // uint16
+#define	XP2_UDP_INPACKET_CHANNELS_OFFSET	4	// uint16
+#define	XP2_UDP_INPACKET_DATA_OFFSET		5	// uint16 ...
+#define XP2_UDP_INPACKET_CRC_OFFSET         5	// uint16 + data channels
+
+//	(header + time stamp + channel count) + max data + crc
+#define	XP2_UDP_INPUT_BUFFER_SIZE	(((XP2_UDP_INPACKET_DATA_OFFSET)*2) + (XP2_MAX_INPUTS *2) + 2)
+#define	XP2_UDP_OUTPUT_BUFFER_SIZE	(((XP2_UDP_OUTPACKET_DATA_OFFSET)*2) + (XP2_MAX_OUTPUTS *2) + 2)
+
+#define XP2_UDP_INPUT_SYNC_PACKET_SIZE   ((sizeof(quint16)*3)+(sizeof(quint32)))
+#define XP2_MAX_SYNC_DATA_LENGTH        ((512-(2+4+2+2))/2)	// total in uint16_t words
+
+
+//--- CTRL Port Communication protocol defines
+
+#define MAX_REQUEST_SIZE	4
+#define	MAX_BUFFER_SIZE		4096		// DATA PACKET = HEADER,PKT_TYPE,DATA,CRCH,CRCL,TRAILER
+#define	MAX_STR_LEN			32
+
+#define	BYTE_HEADER			0xF0
+#define	BYTE_INFO_PACKET	0x49
+#define BYTE_DATA_PACKET	0x44
+#define BYTE_DATA_PACKET_B	0x45
+#define BYTE_STREAM_START	0x41
+#define BYTE_STREAM_STOP	0x42
+#define BYTE_TRAILER		0xF7
+
+#define	BYTE_TRANSPORT_STOP			0x51
+#define	BYTE_TRANSPORT_PLAY			0x52
+#define	BYTE_TRANSPORT_RWD			0x53
+#define	BYTE_TRANSPORT_FWD			0x54
+#define	BYTE_TRANSPORT_STEP_FWD		0x55
+#define	BYTE_TRANSPORT_STEP_BKWD	0x56
+#define	BYTE_TRANSPORT_GOTO			0x57
+#define	BYTE_TRANSPORT_PLAY_FULL	0x58
+#define	BYTE_TRANSPORT_PLAY_HALF	0x59
+#define	BYTE_TRANSPORT_PLAY_QUATER	0x5a
+#define	BYTE_TRANSPORT_PLAY_DOUBLE	0x5b
+#define	BYTE_TRANSPORT_PLAY_FOUR	0x5c
+#define	BYTE_TRANSPORT_RWDPLAY		0x5d
+#define	BYTE_TRANSPORT_RECD			0x5e

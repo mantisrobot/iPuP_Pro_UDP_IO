@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/stylesheet">
+        <file alias="outputslider">morphTargetOutput.stylesheet</file>
+    </qresource>
+</RCC>
