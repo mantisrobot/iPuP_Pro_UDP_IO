@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pbShowInput,SIGNAL(clicked()),iDlg,SLOT(show()));
 
 
-    this->setWindowTitle(QString("XP2 UDP I/O Test Application - ") + VERSION);
+    this->setWindowTitle(QString("iPuP-PRO UDP I/O Test Application - ") + VERSION);
 
     // configure ip/port text
     ui->edtAddress->setText(UDP_OUTPUT_SEND_ADDRESS);    
@@ -29,9 +29,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->edtPortOp->setText(QString::number(UDP_INPUT_PORT));
 
     //  output socket, actually sends input type packet to iPuP-PRO Engine
-    osocket = new QUdpSocket(this);
+    inputSocket = new QUdpSocket(this);
     //  connect the output readyread signal to look for sync packets from Xpress Engine
-    connect(osocket,SIGNAL(readyRead()),this,SLOT(osync()));
+    connect(inputSocket,SIGNAL(readyRead()),this,SLOT(osync()));
 
     // connect start/stop button
     connect(ui->pbEnable,SIGNAL(clicked()),this,SLOT(enablePort()));
@@ -104,7 +104,7 @@ void MainWindow::enablePort()
         // stop listening for Xpress output packets
         rxThread.stopThread();
         // close input stream socket.
-        osocket->close();
+        inputSocket->close();
 
         qApp->processEvents();
         QThread::usleep(100000);
@@ -135,7 +135,7 @@ void MainWindow::enablePort()
         rxThread.startThread("0.0.0.0",ui->edtPortOp->text().toInt());
 
         // bind output socket for sending input data to iPuP-Pro
-        if( osocket->bind(QHostAddress("0.0.0.0"), ui->edtPort->text().toInt() ) == false )
+        if( inputSocket->bind(QHostAddress("0.0.0.0"), ui->edtPort->text().toInt() ) == false )
         {
             qDebug() << "Failed to bind output socket!";
             rxThread.stopThread();
@@ -258,9 +258,9 @@ void MainWindow::osync()
     char    iBuffer[XP2_UDP_INPUT_SYNC_PACKET_SIZE];
 
     //qDebug() << "Sync Trigger";
-    if( osocket->hasPendingDatagrams() )
+    if( inputSocket->hasPendingDatagrams() )
     {
-        int r = osocket->readDatagram(iBuffer,XP2_UDP_INPUT_SYNC_PACKET_SIZE,&inputSenderAddress,NULL);
+        int r = inputSocket->readDatagram(iBuffer,XP2_UDP_INPUT_SYNC_PACKET_SIZE,&inputSenderAddress,NULL);
         if( r <= 0)
         {
             return;
@@ -301,14 +301,14 @@ void MainWindow::sendPacket( QHostAddress destinationAddress )
     // or send as many inputs as you reqire up to MAX_INPUTS
 
     //  send data
-    if( osocket->writeDatagram((char*)lBuffer, l,  destinationAddress, ui->edtPort->text().toInt()) >= 0 )
+    if( inputSocket->writeDatagram((char*)lBuffer, l,  destinationAddress, ui->edtPort->text().toInt()) >= 0 )
     {
        // qDebug() << "Sent" << Sent++;
        // nanoSent = timer.nsecsElapsed();
     }
     else
     {
-        qDebug() << osocket->errorString();
+        qDebug() << inputSocket->errorString();
     }
 
 }

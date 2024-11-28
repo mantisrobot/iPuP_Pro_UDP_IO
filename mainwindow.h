@@ -75,7 +75,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    QUdpSocket *osocket;
+    QUdpSocket *inputSocket;
     QTimer *tick,*tickUpdate;
     QTimer *tick1hz;
     QElapsedTimer timer;
