@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QSlider>
 #include <QGridLayout>
-#include <outputv2.h>
+//#include <outputv2.h>
 #include <output.h>
 #include <xp2defs.h>
 #include <QSpacerItem>

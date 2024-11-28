@@ -1,3 +1,7 @@
+/*
+ * output slider widget
+ */
+
 #include "output.h"
 #include "ui_output.h"
 #include <QDebug>

@@ -16,6 +16,8 @@
 #include <xp2defs.h>
 #include <math.h>
 
+#define VERSION "V0.1"
+
 #define UDP_MAX_SIZE 516    // http://www.danzig.jct.ac.il/tcp-ip-lab/ibm-tutorial/3376c211.html
 
 #define UDP_SYNC_PACKET_TRIGGER
@@ -27,7 +29,7 @@
 
 // OUTPUT port is for data going to Xpress, e.g. inputs to drive expressions
 //#define UDP_OUTPUT_BIND_ADDRESS   "192.168.7.1" //"0.0.0.0" // ANY
-#define UDP_OUTPUT_SEND_ADDRESS   "10.0.0.2"
+#define UDP_OUTPUT_SEND_ADDRESS   "0.0.0.0"
 #define UDP_OUTPUT_PORT         20000
 
 #define UDP_OUTPUT_HEADER       0xAA02
@@ -64,21 +66,16 @@ private slots:
     void packetCallBack(void);
     void packetFBCallBack(void);
     void osync(void);
-    void ctrlsync(void);
     void infoRefresh();
     void displayRefresh(void);
     void inputSliderMoved(int index, float value);
     void enablePort();
-    void enableTx() {ctrlRemoteTx(true);}
-    void disableTx() {ctrlRemoteTx(false);}
-    void requestOutputNames();
     void cbSineWave();
 
 private:
     Ui::MainWindow *ui;
 
     QUdpSocket *osocket;
-    QUdpSocket *ctrlsocket;
     QTimer *tick,*tickUpdate;
     QTimer *tick1hz;
     QElapsedTimer timer;

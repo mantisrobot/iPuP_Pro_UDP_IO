@@ -16,25 +16,25 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
+    outputv2.cpp \
     receivethread.cpp \
     output.cpp \
     outputdlg.cpp \
-    outputv2.cpp \
     inputdlg.cpp
 
 HEADERS  += mainwindow.h \
+    outputv2.h \
     receivethread.h \
     output.h \
     outputdlg.h \
-    outputv2.h \
     inputdlg.h \
     xp2defs.h
 
 FORMS    += mainwindow.ui \
     output.ui \
     outputdlg.ui \
-    outputv2.ui \
-    inputdlg.ui
+    inputdlg.ui \
+    outputv2.ui
 
 OTHER_FILES +=
 

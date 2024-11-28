@@ -1,3 +1,7 @@
+/*
+ * input slider widget
+ */
+
 #ifndef OUTPUTV2_H
 #define OUTPUTV2_H
 

@@ -1,3 +1,8 @@
+/*
+ * Input slider dialogue
+ * used to set input values for the UDP input packt to iPuP-PRO
+ */
+
 #ifndef INPUTDLG_H
 #define INPUTDLG_H
 

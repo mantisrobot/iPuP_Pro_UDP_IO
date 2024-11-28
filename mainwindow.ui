@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>368</height>
+    <height>260</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,31 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="2" column="0">
+       <widget class="QPushButton" name="pbShowInput">
+        <property name="text">
+         <string>Show Input Window</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="pbEnable">
+        <property name="text">
+         <string>Enable Port</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="pbShowOutput">
+        <property name="text">
+         <string>Show Output Window</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
     <item row="2" column="0">
      <layout class="QGridLayout" name="gridLayout">
       <item row="6" column="2">
@@ -156,7 +181,7 @@
         <item>
          <widget class="QLineEdit" name="edtSendTo">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="inputMask">
            <string>###.###.###.###</string>
@@ -178,73 +203,6 @@
        <widget class="QCheckBox" name="cbSineWave">
         <property name="text">
          <string>Send Sine Wave</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="0" column="0">
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="1">
-       <widget class="QPushButton" name="pbStartTx">
-        <property name="text">
-         <string>Xpress Stream ON</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="pbStopTx">
-        <property name="text">
-         <string>Xpress Stream OFF</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="pbEnable">
-        <property name="text">
-         <string>Enable Port</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="pbGetOutputNames">
-        <property name="text">
-         <string>Read Output Names</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="pbShowOutput">
-        <property name="text">
-         <string>Show Output Window</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="pbShowInput">
-        <property name="text">
-         <string>Show Input Window</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="3" column="0">
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="1" column="0">
-       <widget class="QPlainTextEdit" name="ptLog">
-        <property name="verticalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOn</enum>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="pbClear">
-        <property name="text">
-         <string>Clear</string>
         </property>
        </widget>
       </item>

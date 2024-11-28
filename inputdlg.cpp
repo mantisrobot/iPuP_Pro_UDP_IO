@@ -1,3 +1,8 @@
+/*
+ * Input slider dialogue
+ * used to set input values for the UDP input packt to iPuP-PRO
+ */
+
 #include "inputdlg.h"
 #include "ui_inputdlg.h"
 
@@ -10,7 +15,7 @@ inputdlg::inputdlg(QWidget *parent) :
     QGridLayout *foo = new QGridLayout();
     ui->scrollAreaWidgetContents->setLayout(foo);
 
-    int row=0,col=0;
+    //int row=0,col=0;
     for( int t = 0; t < XP2_MAX_INPUTS; t++ )
     {
         iSlider[t] = new outputV2(ui->scrollAreaWidgetContents);

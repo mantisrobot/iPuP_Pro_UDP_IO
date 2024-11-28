@@ -1,3 +1,7 @@
+/*
+ * input slider widget
+ */
+
 #include "outputv2.h"
 #include "ui_outputv2.h"
 

@@ -1,3 +1,8 @@
+/*
+ * output dialogue window, creates the output sliders for the UDP output from iPuP-Pro
+ * and Feedback position dialogue window.
+ */
+
 #include "outputdlg.h"
 #include "ui_outputdlg.h"
 

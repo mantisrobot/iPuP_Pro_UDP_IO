@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pbShowInput,SIGNAL(clicked()),iDlg,SLOT(show()));
 
 
-    this->setWindowTitle("XP2 UDP I/O Test Application");
+    this->setWindowTitle(QString("XP2 UDP I/O Test Application - ") + VERSION);
 
     // configure ip/port text
     ui->edtAddress->setText(UDP_OUTPUT_SEND_ADDRESS);    
@@ -33,21 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //  connect the output readyread signal to look for sync packets from Xpress Engine
     connect(osocket,SIGNAL(readyRead()),this,SLOT(osync()));
 
-    //  control socket, this is the Xpress Output socket + 1 and is used for transport control and output information data.
-    ctrlsocket = new QUdpSocket(this);
-    //  connect the output readyread signal to look for sync packets from Xpress Engine
-    connect(ctrlsocket,SIGNAL(readyRead()),this,SLOT(ctrlsync()));
-
     // connect start/stop button
     connect(ui->pbEnable,SIGNAL(clicked()),this,SLOT(enablePort()));
-
-    // connect clear log button
-    connect(ui->pbClear,SIGNAL(clicked()),ui->ptLog,SLOT(clear()));
-
-    // connect enable/disable stream buttons
-    connect(ui->pbStartTx,SIGNAL(clicked()),this,SLOT(enableTx()));
-    connect(ui->pbStopTx,SIGNAL(clicked()),this,SLOT(disableTx()));
-    connect(ui->pbGetOutputNames,SIGNAL(clicked()),this,SLOT(requestOutputNames()));
 
     // configure tick timer at FPS rate, only used when UDP sync packet trigger is not in use.
     tick = new QTimer(this);
@@ -78,9 +65,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->cbSineWave,SIGNAL(clicked(bool)),this,SLOT(cbSineWave()));
 
+    // connect datagram thread receive signals to the call pack routine
     connect(&rxThread,SIGNAL(datagramReceived()),this,SLOT(packetCallBack()));//, Qt::DirectConnection);
     connect(&rxThread,SIGNAL(fbDatagramReceived()),this,SLOT(packetFBCallBack()));//, Qt::DirectConnection);
-    //rxThread.startThread(UDP_INPUT_BIND_ADDRESS,UDP_INPUT_SEND_ADDRESS,UDP_INPUT_PORT);
 
 #ifndef UDP_SYNC_PACKET_TRIGGER
     // configure and start refresh timer
@@ -94,6 +81,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     portEnabled = false;
 
+    ui->edtAddress->setAttribute(Qt::WA_TransparentForMouseEvents);
+    ui->edtSendTo->setAttribute(Qt::WA_TransparentForMouseEvents);
+
 }
 
 MainWindow::~MainWindow()
@@ -101,28 +91,20 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::cbSineWave()
-{
-        iDlg->setDisabled(ui->cbSineWave->isChecked());
 
-}
-
+// enable / disable the ports
 void MainWindow::enablePort()
 {
     if( portEnabled )
     {
         portEnabled = false;
         qDebug() << "enablePort()" << portEnabled;
-        // send transport control to disable Xpress stream
-        ctrlRemoteTx(false);
 
         rxThread.blockSignals(true);
         // stop listening for Xpress output packets
         rxThread.stopThread();
         // close input stream socket.
         osocket->close();
-        // close transport stream socket.
-        ctrlsocket->close();
 
         qApp->processEvents();
         QThread::usleep(100000);
@@ -135,8 +117,6 @@ void MainWindow::enablePort()
         ui->edtSendTo->setEnabled(true);
         ui->edtPort->setEnabled(true);
         ui->edtPortOp->setEnabled(true);
-        ui->pbStartTx->setEnabled(false);
-        ui->pbStopTx->setEnabled(false);
 
         ui->lblFps->setText("Sync FPS: ???");
         ui->lblInfo->setText("Output Count: ???");
@@ -151,11 +131,10 @@ void MainWindow::enablePort()
         qDebug() << "enablePort()" << portEnabled;
 
         rxThread.blockSignals(true);
-        // start the recevie thread, this thread listens for baked output packets from Xpress Engine
-//        rxThread.startThread(ui->edtSendTo->text(),ui->edtAddress->text(),ui->edtPortOp->text().toInt());
+        // start the recevie thread, this thread listens for baked output packets from iPuP-Pro
         rxThread.startThread("0.0.0.0",ui->edtPortOp->text().toInt());
 
-        // bind output socket for sending input data to Xpress
+        // bind output socket for sending input data to iPuP-Pro
         if( osocket->bind(QHostAddress("0.0.0.0"), ui->edtPort->text().toInt() ) == false )
         {
             qDebug() << "Failed to bind output socket!";
@@ -164,24 +143,10 @@ void MainWindow::enablePort()
             return;
         }
 
-        // bind ctrl socket for sending tranport conrols to Xpress
-        if( ctrlsocket->bind(QHostAddress("0.0.0.0"), ui->edtPortOp->text().toInt() + 1 ) == false )
-        {
-            qDebug() << "Failed to bind control socket!";
-        }
-
-        // send transport control to enable Xpress stream
-        ctrlRemoteTx(true);
-
-        // get the output names
-        requestOutputNames();
-
         ui->edtAddress->setEnabled(false);
         ui->edtSendTo->setEnabled(false);
         ui->edtPort->setEnabled(false);
         ui->edtPortOp->setEnabled(false);
-        ui->pbStartTx->setEnabled(true);
-        ui->pbStopTx->setEnabled(true);
 
         ui->pbEnable->setText("Disable Ports");
 
@@ -190,20 +155,12 @@ void MainWindow::enablePort()
     }
 }
 
-void MainWindow::infoRefresh()
-{
-    QString foo;
-    inputStatusBits = 0;
-    syncTimeCode = 0;
 
-    ui->lblFps->setText("Sync FPS: " + QString::number(syncFps));
-    syncFps = 0;
+// *********************************************************************************
+// Below are routines to deal with the UDP output stream from the iPuP-Pro
+// *********************************************************************************
 
-    ui->lblInfo->setText("Output Count: " + QString::number(outputChannelCount));
-
-}
-
-// we have an output packet to process from Xpress2
+// we have an output packet to process from iPuP-Pro
 void MainWindow::packetCallBack()
 {
     //qDebug() << "packetCallBack()";
@@ -229,7 +186,7 @@ void MainWindow::packetCallBack()
     outputSenderAddress = rxThread.getSocketSenderAddress();
 }
 
-// we have an output packet to process from Xpress2
+// we have an output feedback position packet to process from iPuP-Pro
 void MainWindow::packetFBCallBack()
 {
     //qDebug() << "packetCallBack()";
@@ -253,6 +210,21 @@ void MainWindow::packetFBCallBack()
     outputSenderAddress = rxThread.getSocketSenderAddress();
 }
 
+// display information refresh
+void MainWindow::infoRefresh()
+{
+    QString foo;
+    inputStatusBits = 0;
+    syncTimeCode = 0;
+
+    ui->lblFps->setText("Sync FPS: " + QString::number(syncFps));
+    syncFps = 0;
+
+    ui->lblInfo->setText("Output Count: " + QString::number(outputChannelCount));
+
+}
+
+// refresh teh output and feedback slider displays
 void MainWindow::displayRefresh()
 {
 
@@ -268,8 +240,18 @@ void MainWindow::displayRefresh()
 
 }
 
-// a datagram is ready to read on input sync stream from Xpress2
 
+// *********************************************************************************
+// Below are routines to deal with the UDP input stram from this app to the iPuP-Pro
+//
+// The address that the iPuP-Pro sends sync packets to us configured on the iPuP-Pro
+// SD card ipup_cfg.ini.
+// The iPuP-Pro sends a sync packet to the configured ports at the start of each frame
+// receving clients then send back the input packet to the iPuP-Pro.
+// *********************************************************************************
+
+// a datagram is ready to read on input sync stream from iPuP-Pro
+// we have a sync trigger so we need tos end an input packet to iPuP-PRO
 void MainWindow::osync()
 {
     static float sinpos = 0;
@@ -304,15 +286,12 @@ void MainWindow::osync()
             syncFps++;
             sendPacket( inputSenderAddress );
 #endif
-/*
-            char b[100];
-            sprintf(b,"Sync TC= %3.3d:%2.2d:%2.2d:%3.3d",syncTimeCodeBuffer.hours,syncTimeCodeBuffer.minutes,syncTimeCodeBuffer.seconds,syncTimeCodeBuffer.frames);
-            qDebug() << b;
-            */
+
         }
     }
 }
 
+// Send the UDP input type packet to iPuP-Pro
 void MainWindow::sendPacket( QHostAddress destinationAddress )
 {
     char       lBuffer[512];
@@ -320,10 +299,8 @@ void MainWindow::sendPacket( QHostAddress destinationAddress )
     bzero(lBuffer,512);
     int l = createUdpInputPacket(XP2_MAX_INPUTS,(char *)inputValues,lBuffer);
     // or send as many inputs as you reqire up to MAX_INPUTS
-    //int l = createUdpInputPacket(4,(char *)inputValues,lBuffer);
 
     //  send data
-//    if( osocket->writeDatagram((char*)lBuffer, l,  QHostAddress(ui->edtAddress->text()), ui->edtPort->text().toInt()) >= 0 )
     if( osocket->writeDatagram((char*)lBuffer, l,  destinationAddress, ui->edtPort->text().toInt()) >= 0 )
     {
        // qDebug() << "Sent" << Sent++;
@@ -337,257 +314,7 @@ void MainWindow::sendPacket( QHostAddress destinationAddress )
 }
 
 
-void MainWindow::ctrlsync()
-{
-    unsigned char    iBuffer[512];
-
-    // datagram was recevied from Xpress Transport control port
-    if( ctrlsocket->hasPendingDatagrams() )
-    {
-        //qDebug() << "Have CTRL datagram";
-        QHostAddress ctrlSenderAddress;
-        int r = ctrlsocket->readDatagram((char*)iBuffer,512,&ctrlSenderAddress,NULL);
-        if( r <= 0)
-        {
-            return;
-        }
-        qDebug() << "ctrlsync()" << " Received from " << ctrlSenderAddress << r << "bytes";
-        if( iBuffer[0] == BYTE_HEADER)
-        {
-            if( iBuffer[3] == BYTE_TRAILER )
-            {
-                switch(iBuffer[1])
-                {
-                default:
-                    qDebug() << "Unknown CTRL Command! " << iBuffer[1];
-                    ui->ptLog->appendPlainText("Unknown CTRL Command!");
-                    break;
-                case BYTE_TRANSPORT_STOP:
-                    qDebug() << "Transport STOP";
-                    ui->ptLog->appendPlainText("Transport STOP");
-                    break;
-                case BYTE_TRANSPORT_PLAY:
-                    qDebug() << "Transport PLAY";
-                    if( iBuffer[2] == BYTE_TRANSPORT_RECD )
-                        ui->ptLog->appendPlainText("Transport RECORD");
-                    else
-                        ui->ptLog->appendPlainText("Transport PLAY");
-                    break;
-                case BYTE_TRANSPORT_PLAY_FOUR:
-                    qDebug() << "Transport PLAY 4x";
-                    ui->ptLog->appendPlainText("Transport PLAY 4x");
-                    break;
-                case BYTE_TRANSPORT_PLAY_FULL:
-                    qDebug() << "Transport PLAY 1x";
-                    ui->ptLog->appendPlainText("Transport PLAY 1x");
-                    break;
-                case BYTE_TRANSPORT_PLAY_DOUBLE:
-                    qDebug() << "Transport PLAY 2x";
-                    ui->ptLog->appendPlainText("Transport PLAY 2x");
-                    break;
-                case BYTE_TRANSPORT_PLAY_HALF:
-                    qDebug() << "Transport PLAY 1/2";
-                    ui->ptLog->appendPlainText("Transport PLAY 1/2");
-                    break;
-                case BYTE_TRANSPORT_PLAY_QUATER:
-                    qDebug() << "Transport PLAY 1/4";
-                    ui->ptLog->appendPlainText("Transport PLAY 1/4");
-                    break;
-                case BYTE_TRANSPORT_FWD:
-                    qDebug() << "Transport FWD";
-                    ui->ptLog->appendPlainText("Transport FWD");
-                    break;
-                case BYTE_TRANSPORT_RWD:
-                    qDebug() << "Transport RWD";
-                    ui->ptLog->appendPlainText("Transport RWD");
-                    break;
-                case BYTE_TRANSPORT_GOTO:
-                    qDebug() << "Transport GOTO";
-                    ui->ptLog->appendPlainText("Transport GOTO");
-                    break;
-                case BYTE_TRANSPORT_RECD:
-                    qDebug() << "Transport RECD";
-                    ui->ptLog->appendPlainText("Transport RECD");
-                    break;
-                case BYTE_TRANSPORT_RWDPLAY:
-                    qDebug() << "Transport RWD PLAY";
-                    ui->ptLog->appendPlainText("Transport RWD PLAY");
-                    break;
-                case BYTE_TRANSPORT_STEP_BKWD:
-                    qDebug() << "Transport STEP BACK";
-                    ui->ptLog->appendPlainText("Transport STEP BACK");
-                    break;
-                case BYTE_TRANSPORT_STEP_FWD:
-                    qDebug() << "Transport STEP FWD";
-                    ui->ptLog->appendPlainText("Transport STEP FWD");
-                    break;
-                }
-            }
-            else
-            {
-                qDebug() << "Bad CTRL Trailer";
-            }
-
-        }
-        else
-        {
-            ui->ptLog->appendPlainText("Bad CTRL Header: " + QString::number(iBuffer[0]) + " Lenght: " + QString::number(r));
-            qDebug() << "Have CTRL datagram";
-            qDebug() << "Received " << r << "byes";
-            qDebug() << "Bad CTRL Header";
-            for( int t = 0; t < r; t++ )
-               fprintf(stderr,"%2.2x ",iBuffer[t]);
-            fprintf(stderr,"\n");
-            fflush(stderr);
-            //flush();
-
-        }
-
-    }
-}
-
-
-void MainWindow::ctrlRemoteTx(bool enable)
-{
-
-
-    unsigned char	lBuffer[ MAX_REQUEST_SIZE ];
-    int count=0;
-
-    if( ctrlsocket->state() != QAbstractSocket::BoundState  ) return;
-
-    lBuffer[count++] = BYTE_HEADER;
-    if( enable )
-        lBuffer[count++] = BYTE_STREAM_START;
-    else
-        lBuffer[count++] = BYTE_STREAM_STOP;
-    lBuffer[count++] = 0;
-    lBuffer[count++] = BYTE_TRAILER;
-
-    qDebug() << "Xpress VP Start/Stop Stream";
-
-    //  send data
-    if( ctrlsocket->writeDatagram((char*)lBuffer, count,  QHostAddress(ui->edtAddress->text()), ui->edtPortOp->text().toInt() + 1) >= 0 )
-    {
-       // qDebug() << "Sent" << Sent++;
-       // nanoSent = timer.nsecsElapsed();
-    }
-    else
-    {
-        qDebug() << ctrlsocket->errorString();
-    }
-
-
-}
-
-
-void MainWindow::requestOutputNames()
-{
-    unsigned char	lPacket[ MAX_REQUEST_SIZE ];
-    unsigned char   lBuffer[ MAX_BUFFER_SIZE ];
-
-    if( ctrlsocket->state() != QAbstractSocket::BoundState  ) return;
-
-    ctrlsocket->blockSignals(true);
-
-    rxThread.blockSignals(true);
-
-    // Build info packet for request
-    // Output names are read 10 at a time.
-    for( int t = 0; t < XP2_MAX_OUTPUTS/10; t++ )
-    {
-        lPacket[0] = BYTE_HEADER;
-        lPacket[1] = BYTE_INFO_PACKET;
-        lPacket[2] = t;
-        lPacket[3] = BYTE_TRAILER;
-
-        qDebug() << "Request ouptut names " << t+1 << " of " << XP2_MAX_OUTPUTS/10;
-        if( ctrlsocket->writeDatagram((char*)lPacket, 4,  QHostAddress(ui->edtAddress->text()), ui->edtPortOp->text().toInt() + 1) >= 0 )
-        {
-           // qDebug() << "Sent" << Sent++;
-           // nanoSent = timer.nsecsElapsed();
-        }
-        else
-        {
-            qDebug() << ctrlsocket->errorString();
-            ctrlsocket->blockSignals(false);
-            rxThread.blockSignals(false);
-            return;
-        }
-
-        ctrlsocket->waitForReadyRead(100);
-        if( ctrlsocket->hasPendingDatagrams() )
-        {
-            int r = ctrlsocket->readDatagram((char *)lBuffer,MAX_BUFFER_SIZE,NULL,NULL);
-            if( r <= 0)
-            {
-                qDebug() << "Error reading CTRL socket name data!";
-                ctrlsocket->blockSignals(false);
-                rxThread.blockSignals(false);
-                return;
-            }
-
-            // check header and ctrl byte
-            if( lBuffer[0] == BYTE_HEADER && lBuffer[1] == BYTE_INFO_PACKET )
-            {
-                // get the output offset index
-                int lAddress = lBuffer[2] * 10;
-
-                // check against requested index
-                if( lAddress == t*10 )
-                {
-                    // check received data count and trailer byte
-                    if( r == (MAX_REQUEST_SIZE+(MAX_STR_LEN*10)) && lBuffer[MAX_REQUEST_SIZE+(MAX_STR_LEN*10)-1] == BYTE_TRAILER )
-                    {
-                        // all good so store the ouptu names
-                        for( int i = 0; i < 10; i++ )
-                        {
-                            //SetName((t*10)+i,(char *)&lBuffer[(MAX_REQUEST_SIZE-1)+(i*MAX_STR_LEN)]);
-                            strcpy(outputNames[(t*10)+i], (char *)&lBuffer[(MAX_REQUEST_SIZE-1)+(i*MAX_STR_LEN)] );
-                            qDebug() <<  "Read output " << (t*10)+i << " name " << outputNames[(t*10)+i];
-                            oDlg->updateSliderName((t*10)+i,outputNames[(t*10)+i]);
-                        }
-                    }
-                    else
-                    {
-                        qDebug() << "Read Name Failed! " << lAddress << " , " << r << " Trailer = " << lBuffer[MAX_REQUEST_SIZE+(MAX_STR_LEN*10)-1];
-                        ctrlsocket->blockSignals(false);
-                        rxThread.blockSignals(false);
-                        return;
-                    }
-                }
-                else
-                {
-                    qDebug() << "Request address mismatch " << lAddress << " != " << t*10 ;
-                    ctrlsocket->blockSignals(false);
-                    rxThread.blockSignals(false);
-                    return;
-                }
-            }
-            else
-            {
-                qDebug() << "Error CTRL header mismatch!";
-                ctrlsocket->blockSignals(false);
-                rxThread.blockSignals(false);
-                return;
-            }
-
-        }
-        else
-        {
-            qDebug() << "Error waiting for CTRL socket name data!";
-            ctrlsocket->blockSignals(false);
-            rxThread.blockSignals(false);
-            return;
-        }
-    }
-
-    ctrlsocket->blockSignals(false);
-    rxThread.blockSignals(false);
-
-}
-
-
+// create the UDP input packet for iPuP-Pro
 int		MainWindow::createUdpInputPacket(  quint16 channelCount, char *pInData, char *pOutData )
 {
     if( pInData == NULL || pOutData == NULL ) return 0;
@@ -621,6 +348,8 @@ int		MainWindow::createUdpInputPacket(  quint16 channelCount, char *pInData, cha
 
 }
 
+
+// check validity of UDP input sync packet from iPuP-Pro
 int		MainWindow::checkUdpSyncPacket( quint16 bytesIn, char *pData )
 {
     if( pData == NULL ) return 0;
@@ -669,6 +398,8 @@ int		MainWindow::checkUdpSyncPacket( quint16 bytesIn, char *pData )
     return -1;
 }
 
+
+// input slider moved callback
 void MainWindow::inputSliderMoved(int index, float value)
 {
     //qDebug() << index << " " << value;
@@ -677,6 +408,7 @@ void MainWindow::inputSliderMoved(int index, float value)
 }
 
 
+// UDP input crc generator
 quint16 MainWindow::crcGenerate(char *dPtr, unsigned pLength)
 {
     quint16 rl;
@@ -694,4 +426,13 @@ quint16 MainWindow::crcGenerate(char *dPtr, unsigned pLength)
     }
 
 return crc16;
+}
+
+
+
+// set sinewave test mode for input sliders
+void MainWindow::cbSineWave()
+{
+        iDlg->setDisabled(ui->cbSineWave->isChecked());
+
 }

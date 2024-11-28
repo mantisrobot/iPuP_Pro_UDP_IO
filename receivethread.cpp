@@ -1,3 +1,9 @@
+
+/*
+ * This is a thread that deals with incomming UDP output packlets from the iPuP-PRO
+ * this inclused the feedb back position packet if available.
+ */
+
 #include "receivethread.h"
 
 receiveThread::receiveThread(QObject *parent) :
