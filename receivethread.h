@@ -30,8 +30,8 @@
 #define	XP2_UDP_OUTPUT_BUFFER_SIZE	(((XP2_UDP_OUTPACKET_DATA_OFFSET)*2) + (UDP_OUTPUT_CHANNELS *2) + 2)
 
 //  data coming into app, eg output data from Xpress
-#define UDP_INPUT_HEADER            0x5502
-#define UDP_INPUT_FEEDBACK_HEADER   0x5503
+#define XP2_UDP_OUTPUT_HEADER            0x5502
+#define XP2_UDP_OUTPUT_FEEDBACK_HEADER   0x5503
 
 const	quint16 cCrc16Table[16] = {
                 0x0000, 0xcc01, 0xd801, 0x1400,

@@ -24,9 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowTitle(QString("iPuP-PRO UDP I/O Test Application - ") + VERSION);
 
     // configure ip/port text
-    ui->edtAddress->setText(UDP_OUTPUT_SEND_ADDRESS);    
-    ui->edtPort->setText(QString::number(UDP_OUTPUT_PORT));
-    ui->edtPortOp->setText(QString::number(UDP_INPUT_PORT));
+    ui->edtAddress->setText(XP2_UDP_INPUT_SEND_ADDRESS);
+    ui->edtPort->setText(QString::number(XP2_UDP_INPUT_PORT));
+    ui->edtPortOp->setText(QString::number(XP2_UDP_OUTPUT_PORT));
 
     //  output socket, actually sends input type packet to iPuP-PRO Engine
     inputSocket = new QUdpSocket(this);
@@ -324,7 +324,7 @@ int		MainWindow::createUdpInputPacket(  quint16 channelCount, char *pInData, cha
     quint16	*pBuff = (quint16 *)pOutData;
 
     //	header
-    *pBuff++ = UDP_OUTPUT_HEADER;
+    *pBuff++ = XP2_UDP_INPUT_HEADER;
 
     //	time stamp
     memcpy( (char *)pBuff, (char *)&syncTimeCode, sizeof(quint32) );
@@ -362,10 +362,10 @@ int		MainWindow::checkUdpSyncPacket( quint16 bytesIn, char *pData )
         return 0;
     }
 
-    if( *pWordData != UDP_OUTPUT_SYNC_HEADER )
+    if( *pWordData != XP2_UDP_INPUT_SYNC_HEADER )
     {
 
-        qDebug("Input Sync packet Header Error %4X != %4X\n",*pWordData,UDP_OUTPUT_SYNC_HEADER);
+        qDebug("Input Sync packet Header Error %4X != %4X\n",*pWordData,XP2_UDP_INPUT_SYNC_HEADER);
         return 0;
     }
 

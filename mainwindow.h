@@ -16,7 +16,7 @@
 #include <xp2defs.h>
 #include <math.h>
 
-#define VERSION "V0.1"
+#define VERSION "V0.2"
 
 #define UDP_MAX_SIZE 516    // http://www.danzig.jct.ac.il/tcp-ip-lab/ibm-tutorial/3376c211.html
 
@@ -25,15 +25,15 @@
 // INPUT port is for data coming in from Xpress, e.g. Xpress baked output data
 //#define UDP_INPUT_BIND_ADDRESS  "192.168.7.1" //"0.0.0.0"  // ANY
 //#define UDP_INPUT_SEND_ADDRESS  "10.0.0.2"
-#define UDP_INPUT_PORT          10000
+#define XP2_UDP_OUTPUT_PORT          10000
 
 // OUTPUT port is for data going to Xpress, e.g. inputs to drive expressions
 //#define UDP_OUTPUT_BIND_ADDRESS   "192.168.7.1" //"0.0.0.0" // ANY
-#define UDP_OUTPUT_SEND_ADDRESS   "0.0.0.0"
-#define UDP_OUTPUT_PORT         20000
+#define XP2_UDP_INPUT_SEND_ADDRESS   "0.0.0.0"
+#define XP2_UDP_INPUT_PORT         20000
 
-#define UDP_OUTPUT_HEADER       0xAA02
-#define	UDP_OUTPUT_SYNC_HEADER  0xAA03
+#define XP2_UDP_INPUT_HEADER     0xAA02
+#define	XP2_UDP_INPUT_SYNC_HEADER  0xAA03
 
 #define FPS 50
 

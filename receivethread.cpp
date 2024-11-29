@@ -122,13 +122,13 @@ int		receiveThread::checkUdpOutputPacket( quint16 bytesIn, char *pData )
     int exitCode = -1;
     switch( *pWordData )
     {
-        case UDP_INPUT_FEEDBACK_HEADER:
+        case XP2_UDP_OUTPUT_FEEDBACK_HEADER:
             exitCode = -2;
             break;
-        case UDP_INPUT_HEADER:
+        case XP2_UDP_OUTPUT_HEADER:
             break;
         default:
-            qDebug("Packet Header Error %4X != %4X\n",*pWordData,UDP_INPUT_HEADER);
+            qDebug("Packet Header Error %4X != %4X\n",*pWordData,XP2_UDP_OUTPUT_HEADER);
             return 0;
             break;
     }
